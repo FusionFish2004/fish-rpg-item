@@ -1,0 +1,5 @@
+name: FishRPG
+main: io.github.jeremyhu.rpg.FishRPG
+version: 1.0
+author: JeremyHu
+api-version: 1.16
