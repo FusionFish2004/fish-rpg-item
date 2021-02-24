@@ -1,31 +1,29 @@
 package io.github.jeremyhu.rpg.item;
 
 import io.github.jeremyhu.rpg.builder.LaserGunBuilder;
+import io.github.jeremyhu.rpg.events.ItemInteractEvent;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
 
-import static io.github.jeremyhu.rpg.builder.RangedWeaponBuilder.WEAPON_RANGE;
-import static io.github.jeremyhu.rpg.builder.WeaponBuilder.WEAPON_DAMAGE;
-
-public class LaserGun extends Item implements RangedWeapon {
-
-    private final double range;
-    private final double damage;
-    private final int cooldown;
+public class LaserGun extends RangedWeapon {
 
     public LaserGun(LaserGunBuilder builder) {
         super(builder);
-        this.range = builder.getRange();
-        this.damage = builder.getDamage();
-        this.cooldown = builder.getCooldown();
 
         this.setExecuteEvent(event -> {
+            if (!(event instanceof ItemInteractEvent)) return;
+
+            PlayerInteractEvent interactEvent = (PlayerInteractEvent)event.getEvent();
+            Action action = interactEvent.getAction();
+
+            if (action != Action.RIGHT_CLICK_AIR) return;
+
             Player player = event.getPlayer();
             World world = player.getWorld();
             Location start = player.getEyeLocation();
@@ -33,7 +31,7 @@ public class LaserGun extends Item implements RangedWeapon {
             RayTraceResult rayTraceResult = world.rayTrace(
                     start,
                     direction,
-                    range,
+                    getRange(),
                     FluidCollisionMode.NEVER,
                     true,
                     0,
@@ -42,8 +40,10 @@ public class LaserGun extends Item implements RangedWeapon {
             direction.multiply(0.5);
             double distance;
 
+            start = RangedWeapon.getHandLocation(player.getLocation());
+
             if (rayTraceResult == null) {
-                distance = range;
+                distance = getRange();
             } else {
                 Location hitPos = rayTraceResult.getHitPosition().toLocation(player.getWorld());
                 distance = start.distance(hitPos);
@@ -52,7 +52,7 @@ public class LaserGun extends Item implements RangedWeapon {
                     Entity entity = rayTraceResult.getHitEntity();
                     if (entity instanceof LivingEntity) {
                         LivingEntity livingEntity = (LivingEntity) entity;
-                        livingEntity.damage(damage, player);
+                        livingEntity.damage(getDamage(), player);
                     } else {
                         entity.remove();
                     }
@@ -64,27 +64,8 @@ public class LaserGun extends Item implements RangedWeapon {
                 start.add(direction);
             }
 
+            interactEvent.setCancelled(true);
         });
     }
 
-    @Override
-    public void setPersistentData(PersistentDataContainer container) {
-        container.set(WEAPON_RANGE, PersistentDataType.DOUBLE, range);
-        container.set(WEAPON_DAMAGE, PersistentDataType.DOUBLE, damage);
-    }
-
-    @Override
-    public double getRange() {
-        return range;
-    }
-
-    @Override
-    public double getDamage() {
-        return damage;
-    }
-
-    @Override
-    public int getCoolDown() {
-        return cooldown;
-    }
 }

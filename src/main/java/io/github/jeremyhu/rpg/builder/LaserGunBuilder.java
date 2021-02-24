@@ -28,7 +28,9 @@ public class LaserGunBuilder extends RangedWeaponBuilder {
     public void getPersistentData(PersistentDataContainer container) {
         double range = container.get(WEAPON_RANGE, PersistentDataType.DOUBLE);
         double damage = container.get(WEAPON_DAMAGE, PersistentDataType.DOUBLE);
+        int cooldown = container.get(WEAPON_COOLDOWN, PersistentDataType.INTEGER);
         range(range);
         damage(damage);
+        cooldown(cooldown);
     }
 }

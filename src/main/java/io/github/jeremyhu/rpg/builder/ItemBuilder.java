@@ -1,5 +1,6 @@
 package io.github.jeremyhu.rpg.builder;
 
+import io.github.jeremyhu.rpg.events.ItemExecuteEvent;
 import io.github.jeremyhu.rpg.item.Item;
 import io.github.jeremyhu.rpg.manager.ItemManager;
 import org.bukkit.Material;
@@ -13,12 +14,13 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 public abstract class ItemBuilder {
+
     private Material material = Material.BLAZE_ROD;
     private String name;
     private int model;
     private UUID uuid = UUID.randomUUID();
     private final String type;
-    private Consumer<PlayerInteractEvent> executeEvent;
+    private Consumer<ItemExecuteEvent> executeEvent;
     private List<String> lore = new ArrayList<>();
 
     public ItemBuilder(String type) {
@@ -40,7 +42,7 @@ public abstract class ItemBuilder {
         return this;
     }
 
-    public ItemBuilder executeEvent(Consumer<PlayerInteractEvent> executeEvent) {
+    public ItemBuilder executeEvent(Consumer<ItemExecuteEvent> executeEvent) {
         this.executeEvent = executeEvent;
         return this;
     }
@@ -81,7 +83,7 @@ public abstract class ItemBuilder {
 
     public abstract Item build();
 
-    public Consumer<PlayerInteractEvent> getExecuteEvent() {
+    public Consumer<ItemExecuteEvent> getExecuteEvent() {
         return executeEvent;
     }
 

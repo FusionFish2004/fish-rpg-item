@@ -2,6 +2,9 @@ package io.github.jeremyhu.rpg.item;
 
 import io.github.jeremyhu.rpg.FishRPG;
 import io.github.jeremyhu.rpg.builder.ItemBuilder;
+import io.github.jeremyhu.rpg.catagory.Catagory;
+import io.github.jeremyhu.rpg.events.ItemExecuteEvent;
+import io.github.jeremyhu.rpg.keys.DataKey;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -10,6 +13,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -26,11 +30,15 @@ public abstract class Item {
     private final String type;
     private final List<String> lore;
 
-    public void setExecuteEvent(Consumer<PlayerInteractEvent> executeEvent) {
+    private Catagory catagory;
+
+    private final List<DataKey> keyPool = new ArrayList<>();
+
+    public void setExecuteEvent(Consumer<ItemExecuteEvent> executeEvent) {
         this.executeEvent = executeEvent;
     }
 
-    private Consumer<PlayerInteractEvent> executeEvent;
+    private Consumer<ItemExecuteEvent> executeEvent;
 
     protected Item(ItemBuilder builder) {
         this.material = builder.getMaterial();
@@ -66,7 +74,15 @@ public abstract class Item {
         return lore;
     }
 
-    public Consumer<PlayerInteractEvent> getExecuteEvent() {
+    public Catagory getCatagory() {
+        return catagory;
+    }
+
+    public void setCatagory(Catagory catagory) {
+        this.catagory = catagory;
+    }
+
+    public Consumer<ItemExecuteEvent> getExecuteEvent() {
         return executeEvent;
     }
 
@@ -87,7 +103,13 @@ public abstract class Item {
         return itemStack;
     }
 
-    public abstract void setPersistentData(PersistentDataContainer container);
+    public void addDataKey(DataKey dataKey) {
+        keyPool.add(dataKey);
+    }
+
+    private void setPersistentData(PersistentDataContainer container) {
+        keyPool.forEach(dataKey -> dataKey.apply(container));
+    }
 
     public static boolean isItem(ItemStack itemStack) {
         ItemMeta meta = itemStack.getItemMeta();
